@@ -22,51 +22,59 @@ mymemory_t* mymemory_init(size_t size){
 // tenta alocar bloco de memoria em tamanho especifico
 // se for bem sucedido, retorna ponteiro pro inicio do bloco
 // se não, retorna NULL
-void* mymemory_alloc(mymemory_t *memory, size_t size){
-    if (size == 0){
-        printf("\ntamanho inválido.");
+void* mymemory_alloc(mymemory_t *memory, size_t size) {
+    if (memory == NULL || size == 0) {
         return NULL;
-    } else if (memory->total_size < size){
-        printf("\ntamanho maior que o alocado anteriormente.");
+    }
+    if (size > memory->total_size || memory->pool == NULL) {
         return NULL;
-    } 
-
-    allocation_t* new_node = malloc(sizeof(allocation_t));
-    
-    if (memory->head == NULL) {
-        new_node->start = memory->pool;
-        new_node->size = size;
-        new_node->next = NULL;
-        memory->head = new_node;
-        return new_node->start;
     }
 
-    // nodo q está sendo verificado
+    // node atual
     allocation_t* aux = memory->head;
-    //nodo anterior ao atual
+    // node anterior
     allocation_t* previous = NULL;
-    //primeiro endereço possível pra alocação
-    char *position = (char *)memory->pool;
-
+    // guarda a alocação em char
+    char* position = (char*)memory->pool;
 
     while (aux != NULL) {
-        previous = aux;
-        aux = aux->next;
-
-        size_t space_free = (char *)aux->start - position;
+        size_t space_free = (char*)aux->start - position;
 
         if (space_free >= size) {
-            new_node->start = position;
-            new_node->size = size;
-            new_node->next = aux;
-            previous->next = new_node;
-        } else {
-            position = (char *)aux->start + aux->size;
-            previous = aux;
-            aux = aux->next;
+            break;
+        }
+
+        position = (char*)aux->start + aux->size;
+        previous = aux;
+        aux = aux->next;
+    }
+
+    if (aux == NULL) {
+        char* pool_end = (char*)memory->pool + memory->total_size;
+        size_t space_free = pool_end - position;
+
+        if (space_free < size) {
+            return NULL;
         }
     }
 
+    allocation_t* new_node = malloc(sizeof(allocation_t));
+
+    if (new_node == NULL) {
+        return NULL;
+    }
+
+    new_node->start = position;
+    new_node->size = size;
+    new_node->next = aux;
+
+    if (previous == NULL) {
+        memory->head = new_node;
+    } else {
+        previous->next = new_node;
+    }
+
+    return new_node->start;
 }
 
 // libera a alocação apontada por *ptr

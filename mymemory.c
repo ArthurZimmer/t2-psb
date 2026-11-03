@@ -37,6 +37,7 @@ void* mymemory_alloc(mymemory_t *memory, size_t size) {
     // guarda a alocação em char
     char* position = (char*)memory->pool;
 
+    // alocacoes
     while (aux != NULL) {
         size_t space_free = (char*)aux->start - position;
 

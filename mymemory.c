@@ -188,5 +188,18 @@ void mymemory_stats(mymemory_t *memory){
 
 // libera todos os recursos (alocações e o bloco de memória atual)
 void mymemory_cleanup(mymemory_t *memory){
-    
+    if (memory == NULL) {
+        return;
+    }
+
+    allocation_t *aux = memory->head;
+
+    while (aux != NULL) {
+        allocation_t *next = aux->next;
+        free(aux);
+        aux = next;
+    }
+
+    free(memory->pool);
+    free(memory);
 }

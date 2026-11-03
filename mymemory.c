@@ -31,7 +31,41 @@ void* mymemory_alloc(mymemory_t *memory, size_t size){
         return NULL;
     } 
 
-    memory->pool = malloc(size);
+    allocation_t* new_node = malloc(sizeof(allocation_t));
+    
+    if (memory->head == NULL) {
+        new_node->start = memory->pool;
+        new_node->size = size;
+        new_node->next = NULL;
+        memory->head = new_node;
+        return new_node->start;
+    }
+
+    // nodo q está sendo verificado
+    allocation_t* aux = memory->head;
+    //nodo anterior ao atual
+    allocation_t* previous = NULL;
+    //primeiro endereço possível pra alocação
+    char *position = (char *)memory->pool;
+
+
+    while (aux != NULL) {
+        previous = aux;
+        aux = aux->next;
+
+        size_t space_free = (char *)aux->start - position;
+
+        if (space_free >= size) {
+            new_node->start = position;
+            new_node->size = size;
+            new_node->next = aux;
+            previous->next = new_node;
+        } else {
+            position = (char *)aux->start + aux->size;
+            previous = aux;
+            aux = aux->next;
+        }
+    }
 
 }
 
